@@ -1,5 +1,7 @@
 "use client";
 
+import { Toaster } from "sonner";
+
 import { AuthProvider } from "@/features/auth/components/auth-provider";
 
 type ProvidersProps = {
@@ -7,5 +9,10 @@ type ProvidersProps = {
 };
 
 export function Providers({ children }: ProvidersProps) {
-  return <AuthProvider>{children}</AuthProvider>;
+  return (
+    <AuthProvider>
+      {children}
+      <Toaster richColors closeButton position="top-right" />
+    </AuthProvider>
+  );
 }
