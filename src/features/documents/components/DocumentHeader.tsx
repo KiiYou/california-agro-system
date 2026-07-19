@@ -16,6 +16,10 @@ import type {
   DocumentStatus,
   DocumentType,
 } from "@/features/documents/types/document.types";
+import {
+  canTransitionStatus,
+  getAllowedStatuses,
+} from "@/features/documents/utils/document-workflow";
 
 type DocumentHeaderProps = {
   type: DocumentType;
@@ -29,8 +33,6 @@ type DocumentHeaderProps = {
   onStatusChange: (status: DocumentStatus) => void;
 };
 
-const baseStatuses: DocumentStatus[] = ["draft", "sent", "accepted", "rejected"];
-
 export function DocumentHeader({
   type,
   language,
@@ -42,7 +44,9 @@ export function DocumentHeader({
   onCurrencyChange,
   onStatusChange,
 }: DocumentHeaderProps) {
-  const statuses = type === "invoice" ? [...baseStatuses, "paid"] : baseStatuses;
+  const statuses = getAllowedStatuses(type).filter(
+    (item) => item === status || canTransitionStatus(type, status, item),
+  );
 
   return (
     <div className="grid gap-4 lg:grid-cols-[1fr_12rem_12rem_12rem_12rem]">

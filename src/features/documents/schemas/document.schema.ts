@@ -29,6 +29,11 @@ export const documentItemSchema = z.object({
   lineTotal: z.number().min(0),
 });
 
+export const documentStatusHistoryEntrySchema = z.object({
+  status: documentStatusSchema,
+  date: z.date(),
+});
+
 export const createDocumentSchema = z.object({
   type: documentTypeSchema,
   language: documentLanguageSchema,
@@ -51,6 +56,7 @@ export const createDocumentSchema = z.object({
   notes: z.string().max(1000, "Notes must be 1000 characters or less."),
   currency: documentCurrencySchema,
   status: documentStatusSchema,
+  statusHistory: z.array(documentStatusHistoryEntrySchema).optional(),
   createdBy: z.string().min(1),
 });
 

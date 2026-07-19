@@ -3,6 +3,8 @@ import type {
   BusinessDocument,
   DocumentCustomerSnapshot,
   DocumentItem,
+  DocumentStatus,
+  DocumentStatusHistoryEntry,
 } from "@/features/documents/types/document.types";
 import type { Product } from "@/features/products/types/product";
 import type { Timestamp } from "firebase/firestore";
@@ -55,6 +57,7 @@ type FirestoreDocumentData = {
   createdAt?: Timestamp | Date | null;
   updatedAt?: Timestamp | Date | null;
   createdBy?: unknown;
+  statusHistory?: unknown;
 };
 
 function readString(value: unknown): string {
@@ -116,6 +119,33 @@ function readItems(value: unknown): DocumentItem[] {
   });
 }
 
+function readStatus(value: unknown): DocumentStatus {
+  return value === "sent" ||
+    value === "accepted" ||
+    value === "rejected" ||
+    value === "paid"
+    ? value
+    : "draft";
+}
+
+function readStatusHistory(value: unknown): DocumentStatusHistoryEntry[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.map((entryValue) => {
+    const entry =
+      entryValue && typeof entryValue === "object"
+        ? entryValue as Record<string, unknown>
+        : {};
+
+    return {
+      status: readStatus(entry.status),
+      date: readDate(entry.date as Timestamp | Date | null | undefined),
+    };
+  });
+}
+
 export function mapDocumentDocument(
   id: string,
   data: FirestoreDocumentData,
@@ -134,13 +164,8 @@ export function mapDocumentDocument(
     total: readNumber(data.total),
     notes: readString(data.notes),
     currency: data.currency === "EUR" || data.currency === "EGP" ? data.currency : "USD",
-    status:
-      data.status === "sent" ||
-      data.status === "accepted" ||
-      data.status === "rejected" ||
-      data.status === "paid"
-        ? data.status
-        : "draft",
+    status: readStatus(data.status),
+    statusHistory: readStatusHistory(data.statusHistory),
     createdAt: readDate(data.createdAt),
     updatedAt: readDate(data.updatedAt),
     createdBy: readString(data.createdBy),

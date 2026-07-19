@@ -13,6 +13,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { CustomerSelector } from "@/features/documents/components/CustomerSelector";
 import { DeleteDocumentDialog } from "@/features/documents/components/DeleteDocumentDialog";
@@ -24,12 +32,16 @@ import { ProductSelector } from "@/features/documents/components/ProductSelector
 import { TotalsCard } from "@/features/documents/components/TotalsCard";
 import { useDocumentEngine } from "@/features/documents/hooks/useDocumentEngine";
 import { useDocumentStore } from "@/features/documents/store/document-store";
-import type { BusinessDocument } from "@/features/documents/types/document.types";
+import type {
+  BusinessDocument,
+  DocumentStatus,
+} from "@/features/documents/types/document.types";
 import { mapProductToDocumentItem } from "@/features/documents/utils/document-mappers";
 
 export function DocumentForm() {
   const [documentToDelete, setDocumentToDelete] =
     useState<BusinessDocument | null>(null);
+  const [pendingStatus, setPendingStatus] = useState<DocumentStatus | null>(null);
   const {
     customers,
     products,
@@ -45,6 +57,7 @@ export function DocumentForm() {
     loadDocument,
     saveDraft,
     deleteDocument,
+    duplicateDocument,
   } = useDocumentEngine();
 
   const setLanguage = useDocumentStore((state) => state.setLanguage);
@@ -111,6 +124,7 @@ export function DocumentForm() {
                 onView={loadDocument}
                 onEdit={loadDocument}
                 onDelete={setDocumentToDelete}
+                onDuplicate={(document) => void duplicateDocument(document)}
               />
             </CardContent>
           </Card>
@@ -135,7 +149,11 @@ export function DocumentForm() {
                 onTypeChange={setType}
                 onLanguageChange={setLanguage}
                 onCurrencyChange={setCurrency}
-                onStatusChange={setStatus}
+                onStatusChange={(status) => {
+                  if (status !== draft.status) {
+                    setPendingStatus(status);
+                  }
+                }}
               />
             </CardContent>
           </Card>
@@ -237,6 +255,46 @@ export function DocumentForm() {
               setDocumentToDelete(null);
             }}
           />
+
+          <Dialog
+            open={Boolean(pendingStatus)}
+            onOpenChange={(isOpen) => {
+              if (!isOpen) {
+                setPendingStatus(null);
+              }
+            }}
+          >
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Confirm status change</DialogTitle>
+                <DialogDescription>
+                  Change {draft.number} from {draft.status} to{" "}
+                  {pendingStatus ?? draft.status}? The workflow will be
+                  validated when the document is saved.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setPendingStatus(null)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    if (pendingStatus) {
+                      setStatus(pendingStatus);
+                    }
+                    setPendingStatus(null);
+                  }}
+                >
+                  Confirm
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </>
       )}
     </div>

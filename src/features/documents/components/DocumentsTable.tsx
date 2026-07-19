@@ -9,7 +9,6 @@ import {
 } from "@tanstack/react-table";
 import { Copy, Eye, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { useMemo } from "react";
-import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -37,6 +36,7 @@ type DocumentsTableProps = {
   onView: (document: BusinessDocument) => void;
   onEdit: (document: BusinessDocument) => void;
   onDelete: (document: BusinessDocument) => void;
+  onDuplicate: (document: BusinessDocument) => void;
 };
 
 const dateFormatter = new Intl.DateTimeFormat("en", {
@@ -49,6 +49,7 @@ export function DocumentsTable({
   onView,
   onEdit,
   onDelete,
+  onDuplicate,
 }: DocumentsTableProps) {
   const columns = useMemo<ColumnDef<BusinessDocument>[]>(
     () => [
@@ -130,13 +131,7 @@ export function DocumentsTable({
                 <Pencil className="size-4" aria-hidden />
                 Edit
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() =>
-                  toast.info("Duplicate placeholder", {
-                    description: "Duplicate will be implemented in a later phase.",
-                  })
-                }
-              >
+              <DropdownMenuItem onClick={() => onDuplicate(row.original)}>
                 <Copy className="size-4" aria-hidden />
                 Duplicate
               </DropdownMenuItem>
@@ -153,7 +148,7 @@ export function DocumentsTable({
         ),
       },
     ],
-    [onDelete, onEdit, onView],
+    [onDelete, onDuplicate, onEdit, onView],
   );
 
   // TanStack Table intentionally returns dynamic table APIs from this hook.

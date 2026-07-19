@@ -8,6 +8,7 @@ import type { Customer } from "@/features/customers/types/customer";
 import {
   createDocument,
   deleteDocument,
+  duplicateDocument,
   getDocuments,
   updateDocument,
 } from "@/features/documents/services/document.service";
@@ -168,9 +169,9 @@ export function useDocumentEngine() {
           description: `${draft.number} was updated in Firestore.`,
         });
       } else {
-        await createDocument(input);
+        const result = await createDocument(input);
         toast.success("Document draft created", {
-          description: `${draft.number} was saved to Firestore.`,
+          description: `${result.number} was saved to Firestore.`,
         });
       }
 
@@ -210,6 +211,25 @@ export function useDocumentEngine() {
     }
   }
 
+  async function duplicateExistingDocument(document: BusinessDocument) {
+    setIsSaving(true);
+
+    try {
+      const result = await duplicateDocument(document);
+      toast.success("Document duplicated", {
+        description: `${result.number} was created as a new draft.`,
+      });
+      await loadEngineData();
+    } catch (duplicateError) {
+      const message = getFriendlyError(duplicateError);
+      toast.error("Unable to duplicate document", {
+        description: message,
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
   return {
     customers: customerOptions,
     products: productOptions,
@@ -227,5 +247,6 @@ export function useDocumentEngine() {
     loadDocument,
     saveDraft,
     deleteDocument: removeDocument,
+    duplicateDocument: duplicateExistingDocument,
   };
 }

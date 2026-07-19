@@ -1,6 +1,10 @@
 import type { DocumentType } from "@/features/documents/types/document.types";
 import type { CompanySettings } from "@/features/settings/types/settings.types";
 
+export function formatDocumentNumber(prefix: string, counter: number): string {
+  return `${prefix}-${String(counter).padStart(6, "0")}`;
+}
+
 export function generateDocumentNumber(
   type: DocumentType,
   settings: CompanySettings,
@@ -10,5 +14,5 @@ export function generateDocumentNumber(
   const counter =
     type === "quotation" ? settings.quotationCounter : settings.invoiceCounter;
 
-  return `${prefix}-${String(counter).padStart(6, "0")}`;
+  return formatDocumentNumber(prefix, counter);
 }

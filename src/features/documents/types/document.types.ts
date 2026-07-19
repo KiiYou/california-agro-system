@@ -5,6 +5,11 @@ export type DocumentLanguage = AppLanguage;
 export type DocumentCurrency = AppCurrency;
 export type DocumentStatus = "draft" | "sent" | "accepted" | "rejected" | "paid";
 
+export type DocumentStatusHistoryEntry = {
+  status: DocumentStatus;
+  date: Date;
+};
+
 export type DocumentCustomerSnapshot = {
   companyName: string;
   contactName: string;
@@ -48,6 +53,7 @@ export type BusinessDocument = DocumentTotals & {
   notes: string;
   currency: DocumentCurrency;
   status: DocumentStatus;
+  statusHistory: DocumentStatusHistoryEntry[];
   createdAt: Date;
   updatedAt: Date;
   createdBy: string;
@@ -64,14 +70,22 @@ export type DocumentDraft = DocumentTotals & {
   notes: string;
   currency: DocumentCurrency;
   status: DocumentStatus;
+  statusHistory: DocumentStatusHistoryEntry[];
 };
 
 export type CreateDocumentInput = Omit<
   BusinessDocument,
-  "id" | "createdAt" | "updatedAt"
->;
+  "id" | "createdAt" | "updatedAt" | "statusHistory"
+> & {
+  statusHistory?: DocumentStatusHistoryEntry[];
+};
 
 export type UpdateDocumentInput = CreateDocumentInput;
+
+export type CreateDocumentResult = {
+  id: string;
+  number: string;
+};
 
 export type DocumentTypeFilter = "all" | DocumentType;
 export type DocumentStatusFilter = "all" | DocumentStatus;

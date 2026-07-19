@@ -49,6 +49,7 @@ const initialDraft: DocumentDraft = {
   notes: "",
   currency: "USD",
   status: "draft",
+  statusHistory: [],
 };
 
 function withTotals(draft: DocumentDraft): DocumentDraft {
@@ -100,6 +101,7 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
         notes: document.notes,
         currency: document.currency,
         status: document.status,
+        statusHistory: document.statusHistory,
       },
     }),
   setNotes: (notes) => set((state) => ({ draft: { ...state.draft, notes } })),
