@@ -17,6 +17,8 @@ export const documentItemSchema = z.object({
   productCode: z.string().min(1),
   nameAr: z.string(),
   nameEn: z.string(),
+  descriptionAr: z.string(),
+  descriptionEn: z.string(),
   unit: z.string().min(1),
   quantity: z.number().min(0.01, "Quantity must be greater than zero."),
   unitPrice: z.number().min(0, "Unit price cannot be negative."),
@@ -51,3 +53,5 @@ export const createDocumentSchema = z.object({
   status: documentStatusSchema,
   createdBy: z.string().min(1),
 });
+
+export const updateDocumentSchema = createDocumentSchema;

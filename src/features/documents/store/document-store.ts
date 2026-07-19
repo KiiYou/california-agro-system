@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 import type { Customer } from "@/features/customers/types/customer";
 import type {
+  BusinessDocument,
   DocumentCurrency,
   DocumentDraft,
   DocumentItem,
@@ -20,6 +21,7 @@ type DocumentStore = {
   setStatus: (status: DocumentStatus) => void;
   setCustomer: (customer: Customer) => void;
   setNumber: (number: string) => void;
+  loadDocument: (document: BusinessDocument) => void;
   setNotes: (notes: string) => void;
   setShipping: (shipping: number) => void;
   setTax: (tax: number) => void;
@@ -33,6 +35,7 @@ type DocumentStore = {
 };
 
 const initialDraft: DocumentDraft = {
+  id: null,
   type: "quotation",
   language: "en",
   number: "QT-000001",
@@ -80,6 +83,25 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
       },
     })),
   setNumber: (number) => set((state) => ({ draft: { ...state.draft, number } })),
+  loadDocument: (document) =>
+    set({
+      draft: {
+        id: document.id,
+        type: document.type,
+        language: document.language,
+        number: document.number,
+        customerId: document.customerId,
+        customerSnapshot: document.customerSnapshot,
+        items: document.items,
+        subtotal: document.subtotal,
+        shipping: document.shipping,
+        tax: document.tax,
+        total: document.total,
+        notes: document.notes,
+        currency: document.currency,
+        status: document.status,
+      },
+    }),
   setNotes: (notes) => set((state) => ({ draft: { ...state.draft, notes } })),
   setShipping: (shipping) =>
     set((state) => ({
@@ -116,6 +138,7 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
     set({
       draft: {
         ...initialDraft,
+        id: null,
         number,
       },
     }),

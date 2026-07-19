@@ -21,6 +21,8 @@ export type DocumentItem = {
   productCode: string;
   nameAr: string;
   nameEn: string;
+  descriptionAr: string;
+  descriptionEn: string;
   unit: string;
   quantity: number;
   unitPrice: number;
@@ -52,6 +54,7 @@ export type BusinessDocument = DocumentTotals & {
 };
 
 export type DocumentDraft = DocumentTotals & {
+  id: string | null;
   type: DocumentType;
   language: DocumentLanguage;
   number: string;
@@ -67,3 +70,21 @@ export type CreateDocumentInput = Omit<
   BusinessDocument,
   "id" | "createdAt" | "updatedAt"
 >;
+
+export type UpdateDocumentInput = CreateDocumentInput;
+
+export type DocumentTypeFilter = "all" | DocumentType;
+export type DocumentStatusFilter = "all" | DocumentStatus;
+export type DocumentSortMode =
+  | "newest"
+  | "oldest"
+  | "number"
+  | "customerName"
+  | "total";
+
+export type DocumentFilters = {
+  search: string;
+  type: DocumentTypeFilter;
+  status: DocumentStatusFilter;
+  sortMode: DocumentSortMode;
+};

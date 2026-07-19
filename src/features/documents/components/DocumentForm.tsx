@@ -1,6 +1,7 @@
 "use client";
 
 import { FileText, RefreshCcw, Save } from "lucide-react";
+import { useState } from "react";
 
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -14,25 +15,36 @@ import {
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { CustomerSelector } from "@/features/documents/components/CustomerSelector";
+import { DeleteDocumentDialog } from "@/features/documents/components/DeleteDocumentDialog";
 import { DocumentHeader } from "@/features/documents/components/DocumentHeader";
+import { DocumentsTable } from "@/features/documents/components/DocumentsTable";
+import { DocumentsToolbar } from "@/features/documents/components/DocumentsToolbar";
 import { ItemsTable } from "@/features/documents/components/ItemsTable";
 import { ProductSelector } from "@/features/documents/components/ProductSelector";
 import { TotalsCard } from "@/features/documents/components/TotalsCard";
 import { useDocumentEngine } from "@/features/documents/hooks/useDocumentEngine";
 import { useDocumentStore } from "@/features/documents/store/document-store";
+import type { BusinessDocument } from "@/features/documents/types/document.types";
 import { mapProductToDocumentItem } from "@/features/documents/utils/document-mappers";
 
 export function DocumentForm() {
+  const [documentToDelete, setDocumentToDelete] =
+    useState<BusinessDocument | null>(null);
   const {
     customers,
     products,
+    filteredDocuments,
+    filters,
     draft,
     isLoading,
     isSaving,
     error,
     refresh,
+    setFilters,
     setType,
+    loadDocument,
     saveDraft,
+    deleteDocument,
   } = useDocumentEngine();
 
   const setLanguage = useDocumentStore((state) => state.setLanguage);
@@ -83,7 +95,31 @@ export function DocumentForm() {
         <>
           <Card>
             <CardHeader>
-              <CardTitle>Document Header</CardTitle>
+              <CardTitle>Document Management</CardTitle>
+              <CardDescription>
+                Load, search, filter, sort, edit, and delete Firestore
+                documents.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <DocumentsToolbar
+                filters={filters}
+                onFiltersChange={setFilters}
+              />
+              <DocumentsTable
+                documents={filteredDocuments}
+                onView={loadDocument}
+                onEdit={loadDocument}
+                onDelete={setDocumentToDelete}
+              />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                {draft.id ? `Editing ${draft.number}` : "Create Document"}
+              </CardTitle>
               <CardDescription>
                 Choose document type, language, currency, status, and preview
                 number.
@@ -182,6 +218,25 @@ export function DocumentForm() {
               />
             </CardContent>
           </Card>
+
+          <DeleteDocumentDialog
+            document={documentToDelete}
+            isOpen={Boolean(documentToDelete)}
+            isDeleting={isSaving}
+            onOpenChange={(isOpen) => {
+              if (!isOpen) {
+                setDocumentToDelete(null);
+              }
+            }}
+            onConfirm={async () => {
+              if (!documentToDelete) {
+                return;
+              }
+
+              await deleteDocument(documentToDelete.id);
+              setDocumentToDelete(null);
+            }}
+          />
         </>
       )}
     </div>

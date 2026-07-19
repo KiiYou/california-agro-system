@@ -1,10 +1,28 @@
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  orderBy,
+  query,
+  serverTimestamp,
+  updateDoc,
+} from "firebase/firestore";
 
 import { FIRESTORE_COLLECTIONS } from "@/constants/firestore";
 import { firestoreDb } from "@/firebase/client";
 import { firebaseConfigError } from "@/firebase/config";
-import { createDocumentSchema } from "@/features/documents/schemas/document.schema";
-import type { CreateDocumentInput } from "@/features/documents/types/document.types";
+import {
+  createDocumentSchema,
+  updateDocumentSchema,
+} from "@/features/documents/schemas/document.schema";
+import type {
+  BusinessDocument,
+  CreateDocumentInput,
+  UpdateDocumentInput,
+} from "@/features/documents/types/document.types";
+import { mapDocumentDocument } from "@/features/documents/utils/document-mappers";
 
 function requireFirestore() {
   if (!firestoreDb) {
@@ -21,7 +39,10 @@ function getDocumentsCollection() {
 export async function createDocument(
   input: CreateDocumentInput,
 ): Promise<string> {
-  const validatedInput = createDocumentSchema.parse(input);
+  const validatedInput = createDocumentSchema.parse({
+    ...input,
+    status: "draft",
+  });
   const documentReference = await addDoc(getDocumentsCollection(), {
     ...validatedInput,
     createdAt: serverTimestamp(),
@@ -29,4 +50,37 @@ export async function createDocument(
   });
 
   return documentReference.id;
+}
+
+export async function getDocuments(): Promise<BusinessDocument[]> {
+  const documentsQuery = query(
+    getDocumentsCollection(),
+    orderBy("updatedAt", "desc"),
+  );
+  const snapshot = await getDocs(documentsQuery);
+
+  return snapshot.docs.map((documentSnapshot) =>
+    mapDocumentDocument(documentSnapshot.id, documentSnapshot.data()),
+  );
+}
+
+export async function updateDocument(
+  documentId: string,
+  input: UpdateDocumentInput,
+): Promise<void> {
+  const validatedInput = updateDocumentSchema.parse(input);
+
+  await updateDoc(
+    doc(requireFirestore(), FIRESTORE_COLLECTIONS.documents, documentId),
+    {
+      ...validatedInput,
+      updatedAt: serverTimestamp(),
+    },
+  );
+}
+
+export async function deleteDocument(documentId: string): Promise<void> {
+  await deleteDoc(
+    doc(requireFirestore(), FIRESTORE_COLLECTIONS.documents, documentId),
+  );
 }
